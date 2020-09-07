@@ -1,81 +1,6 @@
-import {Combination} from "./CombinationEnum";
 import {CardRank} from "./CardRankEnum";
-
-export function validateInputSize(inputLine: string, size: number) {
-    if (inputLine.length !== size) {
-        throw new Error("Input size error");
-    }
-}
-
-export function validateInputDuplicates(cardsArray: string[]) {
-    const hasDuplicate = cardsArray.some((val, i) => cardsArray.indexOf(val) !== i);
-    if (hasDuplicate) {
-        throw new Error("Input error (there are duplicates)");
-    }
-}
-
-export function validateInputCharacters(inputLine: string) {
-    if (!(/^([AKQJT98765432][hdsc])+$/g).test(inputLine)) {
-        throw new Error("Input error (error in card designation)");
-    }
-}
-
-export function getCardValue(card: string): CardRank {
-    switch (card[0]) {
-        case "A" :
-            return CardRank.cA;
-        case "K" :
-            return CardRank.cK;
-        case "Q" :
-            return CardRank.cQ;
-        case "J" :
-            return CardRank.cJ;
-        case "T" :
-            return CardRank.cT;
-        case "9" :
-            return CardRank.c9;
-        case "8" :
-            return CardRank.c8;
-        case "7" :
-            return CardRank.c7;
-        case "6" :
-            return CardRank.c6;
-        case "5" :
-            return CardRank.c5;
-        case "4" :
-            return CardRank.c4;
-        case "3" :
-            return CardRank.c3;
-        case "2" :
-            return CardRank.c2;
-        default:
-            throw new Error("Unknown card");
-    }
-}
-
-export function getCardSuits(card: string): string {
-    return card[1];
-}
-
-export function compare(a: string, b: string) {
-    return getCardValue(b) - getCardValue(a);
-}
-
-function groupByKey<T>(entries: T[], getKey: (element: T) => string) {
-    return entries.reduce<{ [key: string]: T[] }>((groups, element) => {
-        const key = getKey(element);
-        if (!(key in groups)) {
-            groups[key] = [];
-        }
-        groups[key].push(element);
-        return groups;
-    }, {});
-}
-
-type CombinationResponse = {
-    combination: Combination;
-    fiveCards: string[];
-} | false;
+import {Combination} from "./CombinationEnum";
+import {CombinationResponse, CombinationResponseOrFalse, compare, getCardSuits, getCardValue} from "./utils";
 
 export function isHighCard(hand: string[]): CombinationResponse {
     return ({
@@ -85,7 +10,7 @@ export function isHighCard(hand: string[]): CombinationResponse {
     );
 }
 
-export function isPair(hand: string[]): CombinationResponse {
+export function isPair(hand: string[]): CombinationResponseOrFalse {
     const groups = groupByKey(hand, (el) => getCardValue(el).toString());
     const twoPair = Object.values(groups).reverse().find(cards => cards.length >= 2);
     if (twoPair) {
@@ -100,7 +25,7 @@ export function isPair(hand: string[]): CombinationResponse {
     }
 }
 
-export function isTwoPairs(hand: string[]): CombinationResponse {
+export function isTwoPairs(hand: string[]): CombinationResponseOrFalse {
     const groups = groupByKey(hand, (el) => getCardValue(el).toString());
     const pairs = Object.values(groups).reverse()
         .filter(cards => cards.length >= 2);
@@ -121,7 +46,7 @@ export function isTwoPairs(hand: string[]): CombinationResponse {
     }
 }
 
-export function isThreeOfKind(hand: string[]): CombinationResponse {
+export function isThreeOfKind(hand: string[]): CombinationResponseOrFalse {
     const three = groupByKey(hand, (el) => getCardValue(el).toString());
     const threeOfKind = Object.values(three).reverse().find(cards => cards.length >= 3);
     if (threeOfKind) {
@@ -134,10 +59,9 @@ export function isThreeOfKind(hand: string[]): CombinationResponse {
     } else {
         return false;
     }
-
 }
 
-export function isStraight(hand: string[]): CombinationResponse {
+export function isStraight(hand: string[]): CombinationResponseOrFalse {
     let reversedHand = hand.slice().reverse();
     if (getCardValue(reversedHand[0]) === CardRank.c2 && getCardValue(reversedHand[reversedHand.length - 1]) === CardRank.cA) {
         reversedHand.unshift(reversedHand[reversedHand.length - 1]);
@@ -195,7 +119,6 @@ export function isFlush(hand: string[]) {
     }
 }
 
-
 export function isFullHouse(hand: string[]) {
     const groups = groupByKey(hand, (el) => getCardValue(el).toString());
     const x = Object.values(groups).reverse();
@@ -212,7 +135,7 @@ export function isFullHouse(hand: string[]) {
     }
 }
 
-export function isFourOfKind(hand: string[]): CombinationResponse {
+export function isFourOfKind(hand: string[]): CombinationResponseOrFalse {
     const groups = groupByKey(hand, (el) => getCardValue(el).toString());
     const four = Object.values(groups).reverse().find(cards => cards.length === 4);
     if (four) {
@@ -230,7 +153,7 @@ export function isFourOfKind(hand: string[]): CombinationResponse {
     }
 }
 
-export function isStraightFlush(hand: string[]): CombinationResponse {
+export function isStraightFlush(hand: string[]): CombinationResponseOrFalse {
     const groups = groupByKey(hand, getCardSuits);
     const flush = Object.values(groups).find(cards => cards.length >= 5);
     if (flush) {
@@ -248,7 +171,7 @@ export function isStraightFlush(hand: string[]): CombinationResponse {
     }
 }
 
-export function isRoyalFlush(hand: string[]): CombinationResponse {
+export function isRoyalFlush(hand: string[]): CombinationResponseOrFalse {
     const straightFlush = isStraightFlush(hand);
     if (!straightFlush) {
         return false;
@@ -263,6 +186,17 @@ export function isRoyalFlush(hand: string[]): CombinationResponse {
     }
 }
 
+function groupByKey<T>(entries: T[], getKey: (element: T) => string) {
+    return entries.reduce<{ [key: string]: T[] }>((groups, element) => {
+        const key = getKey(element);
+        if (!(key in groups)) {
+            groups[key] = [];
+        }
+        groups[key].push(element);
+        return groups;
+    }, {});
+}
+
 export function searchForCombinations(cards: string): CombinationResponse {
     const combinationCheckFunction = [isRoyalFlush, isStraightFlush, isFourOfKind, isFullHouse, isFlush, isStraight,
         isThreeOfKind, isTwoPairs, isPair, isHighCard];
@@ -270,35 +204,13 @@ export function searchForCombinations(cards: string): CombinationResponse {
     const sortedCards = cards.match(/.{2}/g) || [];
     sortedCards.sort(compare);
 
-    return combinationCheckFunction.reduce((result, checkFunction) => {
+    const result = combinationCheckFunction.reduce((result, checkFunction) => {
         return result || checkFunction(sortedCards);
     }, false);
-}
 
-
-export function main(inputLine: string): string {
-    const allCards = inputLine.split(/ /g);
-    const [board, ...hands] = allCards;
-
-    //Input validation
-    try {
-        const allInput = inputLine.replace(/ /g, "");
-        hands.forEach((cardSet) => validateInputSize(cardSet, 4));
-        validateInputSize(board, 10);
-        validateInputDuplicates(allCards);
-        allCards.forEach(cards => validateInputCharacters(cards));
-    } catch (e) {
-        console.error(e)
+    if (typeof result === "boolean") {
+        throw new Error("Can't find combination");
+    } else {
+        return result;
     }
-
-
-    //Search for combinations in hands
-    const handsResult = hands.map(hand => searchForCombinations(board + hand));
-    console.log("hands Res", handsResult);
-
-    // Hand comparison
-
-
-    return "";
 }
-
