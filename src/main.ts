@@ -15,7 +15,7 @@ export function main(inputLine: string): string {
         validateInputDuplicates(allCards);
         allCards.forEach(cards => validateInputCharacters(cards));
     } catch (e) {
-        console.error(e)
+        console.error(e.message)
     }
 
     //Search for combinations in hands
