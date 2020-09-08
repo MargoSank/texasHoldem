@@ -75,3 +75,38 @@ export function compareHandsAlphabetically(hand1: CombinationResponseWithHand, h
         return delta;
     }
 }
+
+export function combine(a: RegExpMatchArray, min: number): string[][] {
+    let fn = function (n, src, got, all) {
+        if (n == 0) {
+            if (got.length > 0) {
+                all[all.length] = got;
+            }
+            return;
+        }
+        for (let j = 0; j < src.length; j++) {
+            fn(n - 1, src.slice(j + 1), got.concat([src[j]]), all);
+        }
+        return;
+    }
+    const all:string[][] = [];
+    for (let i = min; i < a.length; i++) {
+        fn(i, a, [], all);
+    }
+    // @ts-ignore
+    all.push(a);
+    return all;
+}
+
+export function combineCards(hand: string, board: string): string[] {
+    const handCombination: string[][] = combine(hand.match(/.{2}/g) || [], 2).filter(comb => comb.length == 2);
+    const boardCombination: string[][] = combine(board.match(/.{2}/g) || [], 3).filter(comb => comb.length == 3);
+    const combos: string[] = [];
+
+    for (let i = 0; i < boardCombination.length; i++) {
+        for (let j = 0; j < handCombination.length; j++) {
+            combos.push([...boardCombination[i], ...handCombination[j]].join(""));
+        }
+    }
+    return combos;
+}

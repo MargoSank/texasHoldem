@@ -110,11 +110,14 @@ it('sort hands === 0', () => {
 });
 
 
-it('main ok 1', () => {
+it('main Hold em', () => {
     expect(main("2h3h4h5d8d 9hJh KdKs")).toStrictEqual("KdKs 9hJh");
 });
 
-it('main ok 2', () => {
+it('main Hold em equal hands', () => {
     expect(main("4cKs4h8s7s Ad4s Ac4d As9s KhKd 5d6d")).toStrictEqual("Ac4d=Ad4s 5d6d As9s KhKd");
 });
 
+it('main Omaha', () => {
+    expect(main("5cKs5h8s7s Ad4sAc4d As4hAh4c", true)).toStrictEqual("Ad4sAc4d=As4hAh4c");
+});

@@ -1,28 +1,35 @@
 import {searchForCombinations} from "./combinationMatcher";
 
 import * as readline from "readline";
-import {compareHands, compareHandsAlphabetically} from "./utils";
+import {combineCards, compareHands, compareHandsAlphabetically} from "./utils";
 import {validateInputCharacters, validateInputDuplicates, validateInputSize} from "./validation";
 
-export function main(inputLine: string): string {
+export function main(inputLine: string, isOmaha = false): string {
     const allCards = inputLine.split(/ /g);
     const [board, ...hands] = allCards;
 
     //Input validation
     try {
-        hands.forEach((cardSet) => validateInputSize(cardSet, 4));
+        hands.forEach((cardSet) => validateInputSize(cardSet, isOmaha ? 8 : 4));
         validateInputSize(board, 10);
         validateInputDuplicates(allCards);
         allCards.forEach(cards => validateInputCharacters(cards));
     } catch (e) {
-        console.error(e.message)
+        return e.message;
+    }
+
+    const combinationForHoldem = (hand, board) => searchForCombinations(board + hand)
+    const combinationForOmaha = (hand, board) => {
+        const allPossibleHandCombinations = combineCards(hand, board).map(cards => searchForCombinations(cards));
+        allPossibleHandCombinations.sort(compareHands);
+        return allPossibleHandCombinations[0]
     }
 
     //Search for combinations in hands
     const handsResult = hands.map(hand => ({
-        combination: searchForCombinations(board + hand),
+        combination: isOmaha ? combinationForOmaha(hand, board) : combinationForHoldem(hand, board),
         hand
-    }));
+    }))
 
     // Hand comparison
     handsResult.sort(compareHandsAlphabetically);
@@ -44,7 +51,8 @@ const rl = readline.createInterface({
     terminal: false
 });
 
+const isOmaha = process.argv[2] === "--omaha";
 rl.on('line', function (str) {
-    console.log(main(str));
+    console.log(main(str, isOmaha));
 })
 

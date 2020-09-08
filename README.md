@@ -1,4 +1,4 @@
-# Texas hold 'em
+# Texas hold 'em 
 
 ## Prerequisites
 [Node.js v10](https://nodejs.org/en/download/) (and [npm](https://www.npmjs.com/)).
@@ -9,5 +9,5 @@
 
 ## How to use
 1. `cd build`
-2. `node main.js`
+2. `node main.js` or `node main.js --omaha`
 3. Write input to stdin
