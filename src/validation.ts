@@ -4,8 +4,9 @@ export function validateInputSize(inputLine: string, size: number) {
     }
 }
 
-export function validateInputDuplicates(cardsArray: string[]) {
-    const hasDuplicate = cardsArray.some((val, i) => cardsArray.indexOf(val) !== i);
+export function validateInputDuplicates(inputLine: string) {
+    const allCards = inputLine.replace(/ /g, "").match(/.{2}/g) || [];
+    const hasDuplicate = allCards.some((val, i) => allCards.indexOf(val) !== i);
     if (hasDuplicate) {
         throw new Error("Input error (there are duplicates)");
     }

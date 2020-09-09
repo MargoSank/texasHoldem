@@ -1,7 +1,7 @@
 import {searchForCombinations} from "./combinationMatcher";
 
 import * as readline from "readline";
-import {combineCards, compareHands, compareHandsAlphabetically} from "./utils";
+import {compareHands, compareHandsAlphabetically, getAllCombination} from "./utils";
 import {validateInputCharacters, validateInputDuplicates, validateInputSize} from "./validation";
 
 export function main(inputLine: string, isOmaha = false): string {
@@ -12,7 +12,7 @@ export function main(inputLine: string, isOmaha = false): string {
     try {
         hands.forEach((cardSet) => validateInputSize(cardSet, isOmaha ? 8 : 4));
         validateInputSize(board, 10);
-        validateInputDuplicates(allCards);
+        validateInputDuplicates(inputLine);
         allCards.forEach(cards => validateInputCharacters(cards));
     } catch (e) {
         return e.message;
@@ -20,8 +20,8 @@ export function main(inputLine: string, isOmaha = false): string {
 
     const combinationForHoldem = (hand, board) => searchForCombinations(board + hand)
     const combinationForOmaha = (hand, board) => {
-        const allPossibleHandCombinations = combineCards(hand, board).map(cards => searchForCombinations(cards));
-        allPossibleHandCombinations.sort(compareHands);
+        const allPossibleHandCombinations = getAllCombination(board, hand).map(cards => searchForCombinations(cards));
+        allPossibleHandCombinations.sort((a,b) => compareHands(b, a));
         return allPossibleHandCombinations[0]
     }
 

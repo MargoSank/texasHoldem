@@ -57,8 +57,8 @@ export function compareHands(handComb1: CombinationResponse, handComb2: Combinat
     if (delta !== 0) {
         return delta;
     } else {
-        for (let i = 0; i >= handComb1.fiveCards.length; i++) {
-            const deltaCard = compare(handComb1.fiveCards[i], handComb2.fiveCards[i]);
+        for (let i = 0; i < handComb1.fiveCards.length; i++) {
+            const deltaCard = compare(handComb2.fiveCards[i], handComb1.fiveCards[i]);
             if (deltaCard !== 0) {
                 return deltaCard;
             }
@@ -76,37 +76,31 @@ export function compareHandsAlphabetically(hand1: CombinationResponseWithHand, h
     }
 }
 
-export function combine(a: RegExpMatchArray, min: number): string[][] {
-    let fn = function (n, src, got, all) {
-        if (n == 0) {
-            if (got.length > 0) {
-                all[all.length] = got;
-            }
-            return;
-        }
-        for (let j = 0; j < src.length; j++) {
-            fn(n - 1, src.slice(j + 1), got.concat([src[j]]), all);
-        }
-        return;
+export function combIndex(n, k, lo = 1, level = 1, acc: number[] = []): number[][] {
+    if (level === k + 1) {
+        return [acc];
     }
-    const all:string[][] = [];
-    for (let i = min; i < a.length; i++) {
-        fn(i, a, [], all);
+    const res: number[][] = [];
+    for (let i = lo; i <= n - k + level; i++) {
+        res.push(...combIndex(n, k, i + 1, level + 1, [...acc, i]));
     }
-    // @ts-ignore
-    all.push(a);
-    return all;
+    return res;
 }
 
-export function combineCards(hand: string, board: string): string[] {
-    const handCombination: string[][] = combine(hand.match(/.{2}/g) || [], 2).filter(comb => comb.length == 2);
-    const boardCombination: string[][] = combine(board.match(/.{2}/g) || [], 3).filter(comb => comb.length == 3);
-    const combos: string[] = [];
+export function combination(cardsString: string[], k: number): string[][] {
+    return combIndex(cardsString.length, k).map((c) => {
+        return c.map((idx) => cardsString[idx - 1]);
+    });
+}
 
-    for (let i = 0; i < boardCombination.length; i++) {
-        for (let j = 0; j < handCombination.length; j++) {
-            combos.push([...boardCombination[i], ...handCombination[j]].join(""));
+export function getAllCombination(board: string, hand: string): string[] {
+    const boardComb = combination(board.match(/.{2}/g) || [], 3);
+    const handComb = combination(hand.match(/.{2}/g) || [], 2);
+    const allComb: string[] = [];
+    for (let b of boardComb) {
+        for (let h of handComb) {
+            allComb.push([...b, ...h].join(""));
         }
     }
-    return combos;
+    return allComb;
 }

@@ -129,3 +129,10 @@ it('searchForCombinations flush', () => {
         fiveCards: ["Jh", "9h", "4h", "3h", "2h"]
     });
 });
+
+it('searchForCombinations high card', () => {
+    expect(searchForCombinations("2h3s4c5d8d9hKh")).toStrictEqual({
+        combination: Combination.HighCard,
+        fiveCards: ["Kh", "9h", "8d", "5d", "4c"]
+    });
+});
